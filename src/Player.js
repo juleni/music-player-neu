@@ -31,6 +31,8 @@ function Player(url) {
 
   const progressDetailsRef = useRef();
   const progressBarRef = useRef();
+  const repeatBtnRef = useRef();
+  const shuffleBtnRef = useRef();
 
   const [songIndex, setSongIndex] = useState(0);
   const [songName, setSongName] = useState();
@@ -39,8 +41,10 @@ function Player(url) {
   const [audioURL, setAudioURL] = useState(songs[songIndex].audio);
   const [songDuration, setSongDuration] = useState();
   const [songCurrentTime, setSongCurrentTime] = useState(0);
+  const [playing, setPlaying] = useState(false);
 
   const audioObject = new Audio(audioURL);
+  const [audio, setAudio] = useState(audioObject);
 
   audioObject.addEventListener("timeupdate", (e) => {
     const currentTime = e.path[0].currentTime; // Get current song time
@@ -71,10 +75,25 @@ function Player(url) {
 
     // Update current playing time
     setSongCurrentTime(currentTime);
+
+    // Repeat button logic
+    repeatBtnRef.current.addEventListener("click", () => {
+      setSongCurrentTime(0);
+      audioObject.currentTime = 0;
+    });
   });
 
-  const [audio, setAudio] = useState(audioObject);
-  const [playing, setPlaying] = useState(false);
+  // audio.addEventListener("ended", () => {
+  //   nextSong();
+  // });
+
+  // // TODO: FIX THIS
+  // shuffleBtnRef.current.addEventListener("click", () => {
+  //   //function handleOnClickShuffle() {
+  //   const randomIndex = Math.floor(Math.random() * songs.length) + 1;
+  //   console.log(randomIndex);
+  //   setSongIndex(randomIndex);
+  // });
 
   function toggle() {
     setPlaying(!playing);
@@ -124,6 +143,12 @@ function Player(url) {
     }
   }
 
+  function shuffleSong() {
+    if (playing) toggle();
+    const randomIndex = Math.floor(Math.random() * songs.length);
+    setSongIndex(randomIndex);
+  }
+
   // Format time format to min:sec (seconds as 2 digits long)
   function formatMusicTime(duration) {
     const minutes = Math.floor(duration / 60);
@@ -160,7 +185,11 @@ function Player(url) {
         </div>
       </div>
       <div className="control-btn">
-        <span className="material-symbols-outlined" id="repeat">
+        <span
+          className="material-symbols-outlined"
+          id="repeat"
+          ref={repeatBtnRef}
+        >
           repeat
         </span>
         <span
@@ -182,7 +211,12 @@ function Player(url) {
         >
           skip_next
         </span>
-        <span className="material-symbols-outlined" id="shuffle">
+        <span
+          className="material-symbols-outlined"
+          id="shuffle"
+          ref={shuffleBtnRef}
+          onClick={shuffleSong}
+        >
           shuffle
         </span>
       </div>
