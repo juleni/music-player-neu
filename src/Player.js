@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./Player.css";
 
 function Player(url) {
@@ -29,13 +29,51 @@ function Player(url) {
     },
   ];
 
+  const progressDetailsRef = useRef();
+  const progressBarRef = useRef();
+
   const [songIndex, setSongIndex] = useState(0);
   const [songName, setSongName] = useState();
   const [artistName, setArtistName] = useState();
   const [imageName, setImageName] = useState();
   const [audioURL, setAudioURL] = useState(songs[songIndex].audio);
-  // const [playing, toggle] = useAudio(audioURL);
-  const [audio, setAudio] = useState(new Audio(audioURL));
+  const [songDuration, setSongDuration] = useState();
+  const [songCurrentTime, setSongCurrentTime] = useState(0);
+
+  const audioObject = new Audio(audioURL);
+
+  audioObject.addEventListener("timeupdate", (e) => {
+    const currentTime = e.path[0].currentTime; // Get current song time
+    const totalTime = e.path[0].duration; // Get total song time
+    let barWidth = (currentTime / totalTime) * 100;
+    progressBarRef.current.style.width = barWidth + "%";
+
+    progressDetailsRef.current.addEventListener("click", (e) => {
+      // Get width of progress bar
+      let progressTotalWidth = progressDetailsRef.current.clientWidth;
+      // Get actual clicked offset X of progress bar
+      let clickedOffsetX = e.offsetX;
+      // Get total music duration
+      let musicDuration = audioObject.duration;
+
+      // Set current music position
+      let currentTime = (clickedOffsetX / progressTotalWidth) * musicDuration;
+      audioObject.currentTime =
+        (clickedOffsetX / progressTotalWidth) * musicDuration;
+      setSongCurrentTime(currentTime);
+    });
+
+    // Timer logic (set times after audio is loaded)
+    audioObject.addEventListener("loadeddata", () => {
+      let musicDuration = audioObject.duration;
+      setSongDuration(musicDuration);
+    });
+
+    // Update current playing time
+    setSongCurrentTime(currentTime);
+  });
+
+  const [audio, setAudio] = useState(audioObject);
   const [playing, setPlaying] = useState(false);
 
   function toggle() {
@@ -47,7 +85,9 @@ function Player(url) {
     setArtistName(songs[songIndex].artist);
     setImageName(songs[songIndex].img);
     setAudioURL(songs[songIndex].audio);
-    setAudio(new Audio(songs[songIndex].audio));
+    audioObject.src = songs[songIndex].audio;
+    setAudio(audioObject);
+    progressBarRef.current.style.width = "0%";
   }
 
   useEffect(() => {
@@ -66,17 +106,32 @@ function Player(url) {
   }, []);
 
   function prevSong() {
+    if (playing) toggle();
+
     if (songIndex > 0) {
-      if (playing) toggle();
       setSongIndex(songIndex - 1);
+    } else {
+      setSongIndex(songs.length - 1);
     }
   }
 
   function nextSong() {
+    if (playing) toggle();
     if (songIndex < songs.length - 1) {
-      if (playing) toggle();
       setSongIndex(songIndex + 1);
+    } else {
+      setSongIndex(0);
     }
+  }
+
+  // Format time format to min:sec (seconds as 2 digits long)
+  function formatMusicTime(duration) {
+    const minutes = Math.floor(duration / 60);
+    const seconds = Math.floor(duration % 60);
+    let outputTime = minutes + ":";
+    if (seconds < 10) outputTime += "0";
+    outputTime += seconds;
+    return outputTime;
   }
 
   return (
@@ -95,13 +150,13 @@ function Player(url) {
         <p className="name">{songName}</p>
         <p className="artist">{artistName}</p>
       </div>
-      <div className="progress-details">
-        <div className="progress-bar">
+      <div className="progress-details" ref={progressDetailsRef}>
+        <div className="progress-bar" ref={progressBarRef}>
           <span></span>
         </div>
         <div className="time">
-          <span className="current">0:00</span>
-          <span className="final">3:54</span>
+          <span className="current">{formatMusicTime(songCurrentTime)}</span>
+          <span className="final">{formatMusicTime(songDuration)}</span>
         </div>
       </div>
       <div className="control-btn">
