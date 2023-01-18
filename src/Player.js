@@ -27,6 +27,24 @@ function Player(url) {
       img: "/assets/beatles-for-sale.jpg",
       audio: "/assets/no-reply.mp3",
     },
+    {
+      name: "Rat In The River",
+      artist: "SoundHelix",
+      img: "/assets/soundhelix.jpg",
+      audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    },
+    {
+      name: "Giants And Companions",
+      artist: "SoundHelix",
+      img: "/assets/soundhelix.jpg",
+      audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    },
+    {
+      name: "Ashamed Of Light",
+      artist: "SoundHelix",
+      img: "/assets/soundhelix.jpg",
+      audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    },
   ];
 
   const progressDetailsRef = useRef();
@@ -87,14 +105,6 @@ function Player(url) {
   //   nextSong();
   // });
 
-  // // TODO: FIX THIS
-  // shuffleBtnRef.current.addEventListener("click", () => {
-  //   //function handleOnClickShuffle() {
-  //   const randomIndex = Math.floor(Math.random() * songs.length) + 1;
-  //   console.log(randomIndex);
-  //   setSongIndex(randomIndex);
-  // });
-
   function toggle() {
     setPlaying(!playing);
   }
@@ -147,6 +157,7 @@ function Player(url) {
     if (playing) toggle();
     const randomIndex = Math.floor(Math.random() * songs.length);
     setSongIndex(randomIndex);
+    console.log("Random song index: " + randomIndex);
   }
 
   // Format time format to min:sec (seconds as 2 digits long)
